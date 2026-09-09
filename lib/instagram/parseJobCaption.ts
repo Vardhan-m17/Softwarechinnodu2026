@@ -7,7 +7,7 @@ function valueAfter(text: string, labels: string[]) {
 export function parseJobCaption(caption: string) {
   const lines = caption.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
   const labeledTitle = valueAfter(caption, ['position', 'job title', 'role', 'designation']);
-  const title = labeledTitle || lines.find(line => !/^(?:[^\p{L}\d]*)(company|position|job|location|posted|work mode|shift|category|salary|stipend|role overview|key responsibilities|qualifications|skills|apply)\b/i.test(line)) || 'Job opportunity';
+  const title = labeledTitle || lines.find(line => !/^(?:[^\p{L}\d]*)(company|position|job|location|posted|work mode|shift|category|salary|stipend|role overview|key responsibilities|qualifications|skills|apply)\b/iu.test(line)) || 'Job opportunity';
   const company = valueAfter(caption, ['company', 'employer', 'organization']);
   const location = valueAfter(caption, ['location', 'place']);
   const salary = valueAfter(caption, ['salary', 'stipend', 'ctc', 'pay', 'package']);
