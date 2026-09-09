@@ -15,15 +15,16 @@ export function parseJobCaption(caption: string) {
   const company = valueAfter(caption, ['company', 'employer', 'organization']) || hiringSentence?.[1]?.trim() || hiring?.[1]?.split(/!\s*/).pop()?.trim() || hiringDash?.[1]?.trim() || pipeFormat?.[2]?.trim() || '';
   const inferredTitle = hiringSentence?.[2]?.trim() || hiring?.[2]?.trim() || hiringDash?.[2]?.trim() || (pipeFormat ? pipeFormat[1].trim() : '');
   const inferredLocation = hiringSentence?.[3]?.trim() || hiring?.[3]?.trim() || hiringDash?.[3]?.trim() || (pipeFormat ? pipeFormat[3].trim() : '');
-  const title = labeledTitle || inferredTitle || ((hiring || hiringDash || hiringSentence) ? 'Job opportunity' : lines.find(line => !/^(?:[^\p{L}\d]*)(company|position|job|location|posted|work mode|shift|category|salary|stipend|role overview|key responsibilities|qualifications|skills|apply)\b/iu.test(line)) || 'Job opportunity');
+  const rawTitle = labeledTitle || inferredTitle || ((hiring || hiringDash || hiringSentence) ? 'Job opportunity' : lines.find(line => !/^(?:[^\p{L}\d]*)(company|position|job|location|posted|work mode|shift|category|salary|stipend|role overview|key responsibilities|qualifications|skills|apply)\b/iu.test(line)) || 'Job opportunity');
+  const title = rawTitle.replace(/^[^\p{L}\d]+/u, '').replace(/^(?:a|an|the)\s+/i, '').replace(/^(?:hiring alert\s*\|\s*|launch your tech career with\s+|job opportunity\s*[—-]\s*)/i, '').replace(/\s+(?:is\s+)?hiring(?:\s+\d{4})?\s*!?$/i, '').replace(/\s+freshers?\s+hiring(?:\s+\d{4})?\s*!?$/i, '').replace(/\s+/g, ' ').trim() || 'Job opportunity';
   const location = valueAfter(caption, ['location', 'place']) || inferredLocation;
   const salary = valueAfter(caption, ['salary', 'stipend', 'ctc', 'pay', 'package']);
   const jobId = valueAfter(caption, ['job id', 'job code', 'reference id', 'id']);
-  const workMode = valueAfter(caption, ['work mode', 'work type', 'mode']);
   const shift = valueAfter(caption, ['shift']);
   const category = valueAfter(caption, ['category', 'domain']);
+  const workMode = /walk[ -]?in(?: drive)?/i.test(caption) ? 'Walk-in' : /\bhybrid\b/i.test(caption) ? 'Hybrid' : /\b(?:remote|wfh|work from home)\b/i.test(caption) ? 'Remote' : /\b(?:on[ -]?site|work from office|onsite)\b/i.test(caption) ? 'On-site' : 'Unspecified';
   const applyUrl = (caption.match(/https?:\/\/[^\s)]+/i) || [])[0] || '';
   const description = [valueAfter(caption, ['role overview', 'overview']), workMode && `Work mode: ${workMode}`, shift && `Shift: ${shift}`, category && `Category: ${category}`, jobId && `Job ID: ${jobId}`].filter(Boolean).join('\n');
   const skills = lines.filter(line => /^(?:[^\p{L}\d]*)(skills?|technologies|tools?)\s*:/iu.test(line)).flatMap(line => line.replace(/^[^:]+:\s*/, '').split(/[,|•]/)).map(item => item.trim()).filter(Boolean);
-  return { title: title.replace(/^[^\p{L}\d]+/u, '').replace(/\s+/g, ' ').trim(), company, location, salary, jobId, workMode, shift, category, description: description || caption, skills, external_url: applyUrl };
+  return { title, role: title, job_title: title, company: company || null, location: location || null, salary, jobId, job_id: jobId || null, workMode, work_mode: workMode, shift, category, description: description || caption, raw_cleaned_notes: null, skills, external_url: applyUrl };
 }
