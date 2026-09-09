@@ -15,8 +15,8 @@ export async function POST() {
   const records: Record<string, unknown>[] = [];
   let nextUrl: string | null = `https://graph.instagram.com/${userId}/media?${params}`;
   for (let page = 0; nextUrl && page < 20; page += 1) {
-    const response = await fetch(nextUrl, { cache: 'no-store' });
-    const payload = await response.json();
+    const response: Response = await fetch(nextUrl, { cache: 'no-store' });
+    const payload: { data?: Record<string, string>[]; paging?: { next?: string } ; error?: { message?: string } } = await response.json();
     if (!response.ok) return NextResponse.json({ error: payload.error?.message || 'Instagram API request failed.' }, { status: response.status });
     records.push(...(payload.data ?? []).map((item: Record<string, string>) => ({ instagram_media_id: item.id, caption: item.caption || '', media_type: item.media_type || null, media_url: item.media_url || null, thumbnail_url: item.thumbnail_url || null, permalink: item.permalink || null, posted_at: item.timestamp || null, extracted_data: parseJobCaption(item.caption || '') })));
     nextUrl = payload.paging?.next || null;
