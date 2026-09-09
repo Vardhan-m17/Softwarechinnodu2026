@@ -10,10 +10,15 @@ export async function GET(request: Request) {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!token || !userId || !serviceKey) return NextResponse.json({ error: 'Instagram cron environment variables are missing.' }, { status: 503 });
   const params = new URLSearchParams({ fields: 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp', limit: '100', access_token: token });
-  const response = await fetch(`https://graph.instagram.com/${userId}/media?${params}`, { cache: 'no-store' });
-  const payload = await response.json();
-  if (!response.ok) return NextResponse.json({ error: payload.error?.message || 'Instagram API request failed.' }, { status: response.status });
-  const records = (payload.data ?? []).map((item: Record<string, string>) => ({ instagram_media_id: item.id, caption: item.caption || '', media_type: item.media_type || null, media_url: item.media_url || null, thumbnail_url: item.thumbnail_url || null, permalink: item.permalink || null, posted_at: item.timestamp || null, extracted_data: parseJobCaption(item.caption || ''), status: 'pending' }));
+  const records: Record<string, unknown>[] = [];
+  let nextUrl: string | null = `https://graph.instagram.com/${userId}/media?${params}`;
+  for (let page = 0; nextUrl && page < 20; page += 1) {
+    const response = await fetch(nextUrl, { cache: 'no-store' });
+    const payload = await response.json();
+    if (!response.ok) return NextResponse.json({ error: payload.error?.message || 'Instagram API request failed.' }, { status: response.status });
+    records.push(...(payload.data ?? []).map((item: Record<string, string>) => ({ instagram_media_id: item.id, caption: item.caption || '', media_type: item.media_type || null, media_url: item.media_url || null, thumbnail_url: item.thumbnail_url || null, permalink: item.permalink || null, posted_at: item.timestamp || null, extracted_data: parseJobCaption(item.caption || ''), status: 'pending' })));
+    nextUrl = payload.paging?.next || null;
+  }
   const supabase = createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey);
   const { error } = records.length ? await supabase.from('instagram_job_imports').upsert(records, { onConflict: 'instagram_media_id', ignoreDuplicates: false }) : { error: null };
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
