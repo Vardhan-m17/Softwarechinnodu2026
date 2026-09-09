@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   if (!response.ok) return NextResponse.json({ error: payload.error?.message || 'Instagram API request failed.' }, { status: response.status });
   const records = (payload.data ?? []).map((item: Record<string, string>) => ({ instagram_media_id: item.id, caption: item.caption || '', media_type: item.media_type || null, media_url: item.media_url || null, thumbnail_url: item.thumbnail_url || null, permalink: item.permalink || null, posted_at: item.timestamp || null, extracted_data: parseJobCaption(item.caption || ''), status: 'pending' }));
   const supabase = createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey);
-  const { error } = records.length ? await supabase.from('instagram_job_imports').upsert(records, { onConflict: 'instagram_media_id', ignoreDuplicates: true }) : { error: null };
+  const { error } = records.length ? await supabase.from('instagram_job_imports').upsert(records, { onConflict: 'instagram_media_id', ignoreDuplicates: false }) : { error: null };
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ imported: records.length, status: 'pending_review' });
 }
