@@ -11,7 +11,7 @@ export async function POST() {
   if (!user) return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });
-  const params = new URLSearchParams({ fields: 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp', limit: '50', access_token: token });
+  const params = new URLSearchParams({ fields: 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp', limit: '100', access_token: token });
   const response = await fetch(`https://graph.instagram.com/${userId}/media?${params}`, { cache: 'no-store' });
   const payload = await response.json();
   if (!response.ok) return NextResponse.json({ error: payload.error?.message || 'Instagram API request failed.' }, { status: response.status });

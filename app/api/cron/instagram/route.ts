@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const userId = process.env.INSTAGRAM_USER_ID;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!token || !userId || !serviceKey) return NextResponse.json({ error: 'Instagram cron environment variables are missing.' }, { status: 503 });
-  const params = new URLSearchParams({ fields: 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp', limit: '50', access_token: token });
+  const params = new URLSearchParams({ fields: 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp', limit: '100', access_token: token });
   const response = await fetch(`https://graph.instagram.com/${userId}/media?${params}`, { cache: 'no-store' });
   const payload = await response.json();
   if (!response.ok) return NextResponse.json({ error: payload.error?.message || 'Instagram API request failed.' }, { status: response.status });

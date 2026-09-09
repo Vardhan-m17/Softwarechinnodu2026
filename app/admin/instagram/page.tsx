@@ -5,7 +5,7 @@ import { parseJobCaption } from '../../../lib/instagram/parseJobCaption';
 
 export default async function AdminInstagramPage() {
   const supabase = await createClient();
-  const { data } = await supabase.from('instagram_job_imports').select('id, caption, permalink, media_type, media_url, thumbnail_url, posted_at, status, created_at, extracted_data').order('created_at', { ascending: false }).limit(50);
+  const { data } = await supabase.from('instagram_job_imports').select('id, caption, permalink, media_type, media_url, thumbnail_url, posted_at, status, created_at, extracted_data').order('created_at', { ascending: false }).limit(100);
   const items = (data ?? []).map(item => {
     const parsed = parseJobCaption(item.caption || '');
     const stored = (item.extracted_data || {}) as Record<string, unknown>;
