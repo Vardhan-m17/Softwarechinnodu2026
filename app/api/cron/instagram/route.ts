@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { parseJobCaption } from '../../../../lib/instagram/parseJobCaption';
 
 export async function GET(request: Request) {
   const authorization = request.headers.get('authorization');
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
   const response = await fetch(`https://graph.instagram.com/${userId}/media?${params}`, { cache: 'no-store' });
   const payload = await response.json();
   if (!response.ok) return NextResponse.json({ error: payload.error?.message || 'Instagram API request failed.' }, { status: response.status });
-  const records = (payload.data ?? []).map((item: Record<string, string>) => ({ instagram_media_id: item.id, caption: item.caption || '', media_type: item.media_type || null, media_url: item.media_url || null, thumbnail_url: item.thumbnail_url || null, permalink: item.permalink || null, posted_at: item.timestamp || null, extracted_data: {}, status: 'pending' }));
+  const records = (payload.data ?? []).map((item: Record<string, string>) => ({ instagram_media_id: item.id, caption: item.caption || '', media_type: item.media_type || null, media_url: item.media_url || null, thumbnail_url: item.thumbnail_url || null, permalink: item.permalink || null, posted_at: item.timestamp || null, extracted_data: parseJobCaption(item.caption || ''), status: 'pending' }));
   const supabase = createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey);
   const { error } = records.length ? await supabase.from('instagram_job_imports').upsert(records, { onConflict: 'instagram_media_id', ignoreDuplicates: true }) : { error: null };
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
