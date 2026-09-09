@@ -1,5 +1,16 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Supabase setup
+
+The project is prepared for Supabase Auth and database access using `@supabase/ssr`.
+
+1. Create a project at [supabase.com](https://supabase.com).
+2. Copy `.env.local.example` to `.env.local` and add the project URL and publishable key from Supabase **Connect**.
+3. Run `supabase/schema.sql` once in Supabase Dashboard → SQL Editor.
+4. Restart `npm run dev`.
+
+The schema creates profiles, jobs, saved jobs, applications, interviews, resumes, mock tests, and learning progress with row-level security. No secret service-role key belongs in this app.
+
 ## Getting Started
 
 First, run the development server:
