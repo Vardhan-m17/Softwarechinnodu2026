@@ -6,10 +6,17 @@ function valueAfter(text: string, labels: string[]) {
 }
 export function parseJobCaption(caption: string) {
   const lines = caption.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const headline = (lines[0] || '').replace(/[^\p{L}\d|@.,&()'’/\- ]/gu, ' ').replace(/\s+/g, ' ').trim();
   const labeledTitle = valueAfter(caption, ['position', 'job title', 'role', 'designation']);
-  const title = labeledTitle || lines.find(line => !/^(?:[^\p{L}\d]*)(company|position|job|location|posted|work mode|shift|category|salary|stipend|role overview|key responsibilities|qualifications|skills|apply)\b/iu.test(line)) || 'Job opportunity';
-  const company = valueAfter(caption, ['company', 'employer', 'organization']);
-  const location = valueAfter(caption, ['location', 'place']);
+  const hiring = headline.match(/^(.+?)\s+is\s+hiring(?:\s+for\s+(.+?))?(?:\s+in\s+(.+?))?[.!]?$/i);
+  const hiringDash = headline.match(/^(.+?)\s+(?:is\s+)?hiring\s*[–—-]\s*(.+?)(?:\s*[|,]\s*(.+))?$/i);
+  const hiringSentence = headline.match(/^.*?([\p{L}][\p{L} .&'-]+?)\s+is\s+hiring\s+for\s+(.+?)\s+in\s+(.+?)[.!]?$/iu);
+  const pipeFormat = headline.match(/^(.+?)\s*[|]\s*(.+?)\s*[|]\s*(.+)$/i);
+  const company = valueAfter(caption, ['company', 'employer', 'organization']) || hiringSentence?.[1]?.trim() || hiring?.[1]?.split(/!\s*/).pop()?.trim() || hiringDash?.[1]?.trim() || pipeFormat?.[2]?.trim() || '';
+  const inferredTitle = hiringSentence?.[2]?.trim() || hiring?.[2]?.trim() || hiringDash?.[2]?.trim() || (pipeFormat ? pipeFormat[1].trim() : '');
+  const inferredLocation = hiringSentence?.[3]?.trim() || hiring?.[3]?.trim() || hiringDash?.[3]?.trim() || (pipeFormat ? pipeFormat[3].trim() : '');
+  const title = labeledTitle || inferredTitle || ((hiring || hiringDash || hiringSentence) ? 'Job opportunity' : lines.find(line => !/^(?:[^\p{L}\d]*)(company|position|job|location|posted|work mode|shift|category|salary|stipend|role overview|key responsibilities|qualifications|skills|apply)\b/iu.test(line)) || 'Job opportunity');
+  const location = valueAfter(caption, ['location', 'place']) || inferredLocation;
   const salary = valueAfter(caption, ['salary', 'stipend', 'ctc', 'pay', 'package']);
   const jobId = valueAfter(caption, ['job id', 'job code', 'reference id', 'id']);
   const workMode = valueAfter(caption, ['work mode', 'work type', 'mode']);
