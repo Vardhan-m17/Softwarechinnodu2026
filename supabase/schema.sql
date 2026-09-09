@@ -65,12 +65,14 @@ create table if not exists public.jobs (
   title text not null,
   company text not null,
   location text,
+  salary text,
   description text,
   skills text[] not null default '{}',
   source text,
   external_url text,
   created_at timestamptz not null default now()
 );
+alter table public.jobs add column if not exists salary text;
 
 -- Instagram imports remain isolated until an admin reviews and publishes them.
 create table if not exists public.instagram_job_imports (

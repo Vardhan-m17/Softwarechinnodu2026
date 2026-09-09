@@ -7,12 +7,13 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: 'Authentication required.' }, { status: 401 });
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });
-  const { id } = await request.json();
+  const body = await request.json();
+  const { id, job } = body;
   const { data: item, error: itemError } = await supabase.from('instagram_job_imports').select('*').eq('id', id).maybeSingle();
   if (itemError || !item) return NextResponse.json({ error: itemError?.message || 'Import not found.' }, { status: 404 });
-  const title = (item.caption || 'Instagram job opportunity').split('\n').map((line: string) => line.trim()).find(Boolean) || 'Instagram job opportunity';
-  const { data: job, error } = await supabase.from('jobs').insert({ title: title.slice(0, 160), company: 'Instagram post', description: item.caption || 'Imported from Instagram.', source: 'Instagram Posts', external_url: item.permalink, skills: [] }).select('id').single();
+  const title = job?.title || (item.caption || 'Instagram job opportunity').split('\n').map((line: string) => line.trim()).find(Boolean) || 'Instagram job opportunity';
+  const { data: publishedJob, error } = await supabase.from('jobs').insert({ title: title.slice(0, 160), company: job?.company || 'Instagram source', location: job?.location || null, salary: job?.salary || null, description: job?.description || item.caption || 'Imported from Instagram.', skills: Array.isArray(job?.skills) ? job.skills : typeof job?.skills === 'string' ? job.skills.split(',').map((skill: string) => skill.trim()).filter(Boolean) : [], source: 'Instagram Posts', external_url: job?.external_url || item.permalink }).select('id').single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   await supabase.from('instagram_job_imports').update({ status: 'approved', reviewed_at: new Date().toISOString() }).eq('id', id);
-  return NextResponse.json({ jobId: job.id });
+  return NextResponse.json({ jobId: publishedJob.id });
 }
