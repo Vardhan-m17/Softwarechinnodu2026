@@ -497,3 +497,5 @@
 .pending-table-card::-webkit-scrollbar-thumb{background:#6337ee;border:3px solid #eaf1fb;border-radius:8px}
 .pending-table-card table{min-width:1180px}
 .pending-table-card thead th:first-child{font-size:0}.pending-table-card thead th:first-child::after{content:'Select';font-size:10px}.pending-table-card thead th:first-child input{display:none}.pending-table-card th:last-child,.pending-table-card td:last-child{position:sticky;right:0;z-index:2;background:#fff;box-shadow:-5px 0 10px #d9e6f855}.pending-table-card th:last-child{background:#f3f7fd}.pending-table-card td:last-child{min-width:145px}
+/* Pending approval action controls */
+.pending-actions{display:flex;align-items:center;gap:6px}.pending-icon-action{display:grid;place-items:center;width:28px;height:28px;border:1px solid #d9e4f4;border-radius:6px;background:#fff;text-decoration:none;font-size:15px;font-weight:800;cursor:pointer}.pending-icon-action.edit{color:#416fe0}.pending-icon-action.delete{color:#ed5360}.pending-icon-action.publish{color:#079b69;background:#e9fbf2}.pending-icon-action:disabled{opacity:.5;cursor:not-allowed}

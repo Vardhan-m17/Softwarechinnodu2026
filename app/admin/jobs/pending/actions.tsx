@@ -1,0 +1,5 @@
+'use client';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+export default function PendingActions({ id }: { id: string }) { const router=useRouter(); const [busy,setBusy]=useState(false); async function act(kind:'publish'|'delete'){if(kind==='delete'&&!confirm('Delete this pending job?'))return;setBusy(true);const endpoint=kind==='delete'?'/api/admin/instagram/delete':'/api/admin/instagram/publish';const res=await fetch(endpoint,{method:kind==='delete'?'DELETE':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});if(!res.ok)alert((await res.json()).error||'Action failed');else router.refresh();setBusy(false);} return <div className="pending-actions"><Link className="pending-icon-action edit" href={`/admin/instagram/${id}`} title="Edit job" aria-label="Edit job">✎</Link><button className="pending-icon-action delete" onClick={()=>act('delete')} disabled={busy} title="Delete job" aria-label="Delete job">⌫</button><button className="pending-icon-action publish" onClick={()=>act('publish')} disabled={busy} title="Publish job" aria-label="Publish job">✓</button></div>; }
