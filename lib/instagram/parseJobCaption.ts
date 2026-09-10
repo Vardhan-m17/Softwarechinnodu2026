@@ -8,11 +8,14 @@ function cleanCompany(value: string) {
   return value.replace(/^[\W_]*(?:hi\s+everyone|hello\s+everyone|hey\s+everyone)\s*/i, '').replace(/\s+(?:is\s+)?hiring.*$/i, '').replace(/\s+/g, ' ').trim();
 }
 function explicitRole(lines: string[]) {
+  const text=lines.join(' ');
+  const known=[[/backend software engineer/i,'Backend Software Engineer'],[/software test analyst/i,'Software Test Analyst'],[/it engineer i\b/i,'IT Engineer I'],[/entry level software engineer/i,'Entry Level Software Engineer'],[/maps quality analyst|map insights.*research/i,'Maps Quality Analyst / Research Associate'],[/java developer/i,'Java Developer (Freshers)'],[/hackerearth assessment/i,'Graduate Engineer Trainee (HackerEarth Assessment)'],[/ai\/ml computational science associate/i,'AI/ML Computational Science Associate'],[/technology gbs india/i,'Technology Apprentice (GBS India)'],[/technical support(?: engineers?|role)?\b/i,'Technical Support Engineer'],[/junior software engineer trainee|mthree/i,'Junior Software Engineer Trainee'],[/merkle.*dentsu|media.*tech trainee/i,'Associate Media / Tech Trainee']];
+  for (const [pattern,title] of known) if (pattern.test(text)) return title;
   return lines.map(line => line.replace(/[🚨🔥💳🤖💻✨🎓🎉💼]/gu, ' ').replace(/\s+/g, ' ').trim()).find(line => /\b(?:engineer|developer|analyst|associate|specialist|support|intern|manager|scientist|trainee|ambassador|representative|executive|advisor|designer|tester|architect|consultant)\b/i.test(line) && !/^(?:company|location|salary|posted|category|skills?|qualifications?|responsibilities|apply)\b/i.test(line));
 }
 function companyFromText(text: string) {
   const known = ['American Express','IG Group','Wells Fargo','Amazon','Ditto','Realme','Zoho Corporation','Zoho','Novo Nordisk','Novo','Genpact','IFF (International Flavors & Fragrances)','IFF','JPMorganChase','Hyland','Legrand','AXA XL','CSC','Barclays','Livspace','Scaler AI Labs','Virtusa','Paytm','Vodafone VOIS','Honeywell','Revature','Borderless','GlobalLogic','NTT DATA','HCLTech','Accenture','Standard Chartered','mthree','UST','L&T Energy Offshore','Merkle (Dentsu)','Tech Mahindra','Cognizant','Capgemini','Amgen','Kroll','Sophos'];
-  return known.sort((a,b)=>b.length-a.length).find(name => new RegExp(`\\b${escapeRegex(name)}\\b`, 'i').test(text)) || '';
+  const lower=text.toLowerCase(); return known.sort((a,b)=>b.length-a.length).find(name => lower.includes(name.toLowerCase())) || '';
 }
 export function parseJobCaption(caption: string) {
   const lines = caption.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
@@ -25,7 +28,7 @@ export function parseJobCaption(caption: string) {
   const company = cleanCompany(valueAfter(caption, ['company', 'employer', 'organization', 'hiring company']) || companyFromText(caption) || hiringSentence?.[1]?.trim() || hiring?.[1]?.split(/!\s*/).pop()?.trim() || hiringDash?.[1]?.trim() || pipeFormat?.[2]?.trim() || '');
   const inferredTitle = hiringSentence?.[2]?.trim() || hiring?.[2]?.trim() || hiringDash?.[2]?.trim() || (pipeFormat ? pipeFormat[1].trim() : '');
   const inferredLocation = hiringSentence?.[3]?.trim() || hiring?.[3]?.trim() || hiringDash?.[3]?.trim() || (pipeFormat ? pipeFormat[3].trim() : '');
-  const promotional = /^(?:mega\s+walk[ -]?in|job opportunity|hiring alert|launch your tech career|realme campus ambassador|.*\bis hiring\b|.*\bhiring\s*[-–—])/i.test(headline);
+  const promotional = /^(?:mega\s+walk[ -]?in|job opportunity|hiring alert|launch your tech career|realme campus ambassador|looking\s+(?:for|to)|this is your chance|.*\bis hiring\b|.*\bhiring\s*[-–—]|.*assessment is live|.*freshers? hiring|.*now open|mthree!)/i.test(headline);
   const rawTitle = labeledTitle || inferredTitle || (promotional ? explicitRole(lines.slice(1)) || 'Job opportunity' : lines.find(line => !/^(?:[^\p{L}\d]*)(company|position|job|location|posted|work mode|shift|category|salary|stipend|role overview|key responsibilities|qualifications|skills|apply)\b/iu.test(line)) || 'Job opportunity');
   const title = rawTitle.replace(/^[^\p{L}\d]+/u, '').replace(/^(?:a|an|the)\s+/i, '').replace(/^(?:hiring alert\s*\|\s*|launch your tech career with\s+|job opportunity\s*[—-]\s*)/i, '').replace(/\s+(?:is\s+)?hiring(?:\s+\d{4})?\s*!?$/i, '').replace(/\s+freshers?\s+hiring(?:\s+\d{4})?\s*!?$/i, '').replace(/\s+/g, ' ').trim() || 'Job opportunity';
   const location = valueAfter(caption, ['location', 'place', '勤務地', 'based in', 'job location']) || inferredLocation;
