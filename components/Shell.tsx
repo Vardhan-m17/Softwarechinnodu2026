@@ -5,7 +5,7 @@ import { MessageButton } from './MessageButton';
 import { AccountMenu } from './AccountMenu';
 
 const userNav = [['Dashboard', '/dashboard'], ['Jobs', '/jobs'], ['Voice Talk Zone', '/voice-talk-zone'], ['Resume Builder', '/resume-builder'], ['Mock Tests', '/mock-tests'], ['AI Tools', '/ai-tools'], ['Learning', '/learning'], ['Applications', '/applications'], ['Saved Jobs', '/saved-jobs'], ['Career Insights', '/career-insights'], ['Settings', '/settings']];
-const adminNav = [['⌂', 'Overview', '/admin/dashboard'], ['♙', 'Users', '/admin/users'], ['▣', 'Jobs & Scrapers', '/admin/jobs'], ['▤', 'Applications', '/admin/applications'], ['✦', 'AI Services', '/admin/ai-services'], ['▧', 'Resume Builder', '/resume-builder'], ['✓', 'Mock Tests', '/mock-tests'], ['◇', 'Learning Content', '/learning'], ['♧', 'Voice Talk Zone', '/voice-talk-zone'], ['✧', 'AI Tools', '/ai-tools'], ['▥', 'Analytics', '/admin/analytics'], ['⌁', 'System Health', '/admin/health'], ['⚙', 'Settings', '/settings']];
+const adminNav = [['⌂', 'Dashboard', '/admin/dashboard'], ['♙', 'Users', '/admin/users'], ['▣', 'Jobs & Scrapers', '/admin/jobs'], ['▤', 'Applications', '/admin/applications'], ['✦', 'AI Services', '/admin/ai-services'], ['▧', 'Resume Builder', '/resume-builder'], ['✓', 'Mock Tests', '/mock-tests'], ['◇', 'Learning Content', '/learning'], ['♧', 'Voice Talk Zone', '/voice-talk-zone'], ['✧', 'AI Tools', '/ai-tools'], ['▥', 'Analytics', '/admin/analytics'], ['⌁', 'System Health', '/admin/health'], ['⚙', 'Settings', '/settings']];
 const publicNav = [['Home', '/homepage'], ...userNav.slice(1)];
 
 export function Shell({ children, admin = false, publicMode = false }: { children: React.ReactNode; admin?: boolean; publicMode?: boolean }) {
