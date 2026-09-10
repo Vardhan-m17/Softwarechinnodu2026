@@ -73,6 +73,11 @@ create table if not exists public.jobs (
   created_at timestamptz not null default now()
 );
 alter table public.jobs add column if not exists salary text;
+alter table public.jobs add column if not exists status text not null default 'active' check (status in ('draft','pending','active','paused','expired','rejected'));
+alter table public.jobs add column if not exists job_type text not null default 'Full-time';
+alter table public.jobs add column if not exists experience_level text;
+alter table public.jobs add column if not exists expires_at timestamptz;
+alter table public.jobs add column if not exists updated_at timestamptz not null default now();
 
 -- Instagram imports remain isolated until an admin reviews and publishes them.
 create table if not exists public.instagram_job_imports (
@@ -403,3 +408,7 @@ begin
     alter publication supabase_realtime add table public.voice_practice_sessions;
   end if;
 end $$;
+
+-- Admin job management permissions for create/edit/status workflows.
+drop policy if exists "admins manage jobs" on public.jobs;
+create policy "admins manage jobs" on public.jobs for all to authenticated using (public.is_admin()) with check (public.is_admin());
