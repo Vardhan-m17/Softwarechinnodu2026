@@ -1,0 +1,6 @@
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { Shell } from '../../../../../components/Shell';
+import { createClient } from '../../../../../lib/supabase/server';
+
+export default async function JobActivityPage({ params }: { params: Promise<{ jobId: string }> }) { const { jobId } = await params; const supabase = await createClient(); const { data: job } = await supabase.from('jobs').select('id,title,company,created_at,updated_at').eq('id', jobId).maybeSingle(); if (!job) notFound(); return <Shell admin><div className="admin-pro-page jobs-management-page"><div className="job-details-breadcrumb"><Link href={`/admin/jobs/${job.id}`}>Job Details</Link><span>›</span><span>Activity</span></div><header className="admin-hero"><div><span className="admin-eyebrow">JOB ACTIVITY</span><h1>{job.title}</h1><p>Chronological activity for {job.company}.</p></div></header><section className="admin-panel-pro activity-timeline"><div><b>Job created</b><small>{new Date(job.created_at).toLocaleString('en-IN')}</small></div><div><b>Job published</b><small>{new Date(job.updated_at || job.created_at).toLocaleString('en-IN')}</small></div><div><b>Activity tracking enabled</b><small>New applications and edits will appear here.</small></div></section></div></Shell>; }
