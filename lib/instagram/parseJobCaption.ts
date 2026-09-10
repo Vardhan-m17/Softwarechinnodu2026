@@ -17,6 +17,7 @@ function companyFromText(text: string) {
   const known = ['American Express','IG Group','Wells Fargo','Amazon','Ditto','Realme','Zoho Corporation','Zoho','Novo Nordisk','Novo','Genpact','IFF (International Flavors & Fragrances)','IFF','JPMorganChase','Hyland','Legrand','AXA XL','CSC','Barclays','Livspace','Scaler AI Labs','Virtusa','Paytm','Vodafone VOIS','Honeywell','Revature','Borderless','GlobalLogic','NTT DATA','HCLTech','Accenture','Standard Chartered','mthree','UST','L&T Energy Offshore','Merkle (Dentsu)','Tech Mahindra','Cognizant','Capgemini','Amgen','Kroll','Sophos'];
   const lower=text.toLowerCase(); return known.sort((a,b)=>b.length-a.length).find(name => lower.includes(name.toLowerCase())) || '';
 }
+function sectionText(lines: string[], starts: RegExp, ends: RegExp) { const start=lines.findIndex(line=>starts.test(line)); if(start<0)return ''; const values=[]; for(const line of lines.slice(start+1)){ if(ends.test(line))break; values.push(line); } return values.join('\n'); }
 export function parseJobCaption(caption: string) {
   const lines = caption.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
   const headline = (lines[0] || '').replace(/[^\p{L}\d|@.,&()'’/\- ]/gu, ' ').replace(/\s+/g, ' ').trim();
@@ -40,5 +41,6 @@ export function parseJobCaption(caption: string) {
   const applyUrl = (caption.match(/https?:\/\/[^\s)]+/i) || [])[0] || '';
   const description = [valueAfter(caption, ['role overview', 'overview', 'job description', 'about the role']), workMode !== 'Unspecified' && `Work mode: ${workMode}`, shift && `Shift: ${shift}`, category && `Category: ${category}`, jobId && `Job ID: ${jobId}`].filter(Boolean).join('\n');
   const skills = lines.filter(line => /^(?:[^\p{L}\d]*)(skills?|technologies|tools?)\s*:/iu.test(line)).flatMap(line => line.replace(/^[^:]+:\s*/, '').split(/[,|•]/)).map(item => item.trim()).filter(Boolean);
-  return { title, role: title, job_title: title, company: company || null, location: location || null, salary, jobId, job_id: jobId || null, workMode, work_mode: workMode, shift, category, description: description || caption, raw_cleaned_notes: null, skills, external_url: applyUrl };
+  const responsibilities=sectionText(lines,/responsibilit|what you['’]?ll do/i,/qualifications?|requirements?|skills?|salary|location|apply/i); const requirements=sectionText(lines,/qualifications?|requirements?/i,/responsibilit|skills?|salary|location|apply/i);
+  return { title, role: title, job_title: title, company: company || null, location: location || null, salary, jobId, job_id: jobId || null, workMode, work_mode: workMode, shift, category, description: description || caption, responsibilities, requirements, raw_cleaned_notes: null, skills, external_url: applyUrl };
 }
